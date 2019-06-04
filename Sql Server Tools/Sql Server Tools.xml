@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<Collection name="Sql Server Tools" guid="{DE7D0487-26FC-431B-ACAA-3273700929F6}" system="No" updatable="Yes" blockNavigatorNode="No">
+	<HelpLink></HelpLink>
+	<Help></Help>
+	<Addon name="Sql Index Rebuild Process" guid="{43E1BCE2-A8C6-44EE-AF02-8F6FBE97F378}" type="Add-on">
+		<Copy></Copy>
+		<CopyText><![CDATA[<div>--tablelist--</div>]]></CopyText>
+		<ActiveXProgramID></ActiveXProgramID>
+		<DotNetClass></DotNetClass>
+		<ArgumentList></ArgumentList>
+		<AsAjax>No</AsAjax>
+		<Filter>No</Filter>
+		<Help></Help>
+		<HelpLink></HelpLink>
+		<Icon Link="" width="0" height="0" sprites="0" />
+		<InIframe>No</InIframe>
+		<BlockEditTools>No</BlockEditTools>
+		<FormXML></FormXML>
+		<IsInline>No</IsInline>
+		<JavascriptOnLoad></JavascriptOnLoad>
+		<JavascriptInHead></JavascriptInHead>
+		<JavascriptBodyEnd></JavascriptBodyEnd>
+		<MetaDescription></MetaDescription>
+		<OtherHeadTags></OtherHeadTags>
+		<Content>No</Content>
+		<Template>No</Template>
+		<Email>No</Email>
+		<Admin>Yes</Admin>
+		<OnPageEndEvent>No</OnPageEndEvent>
+		<OnPageStartEvent>No</OnPageStartEvent>
+		<OnBodyStart>No</OnBodyStart>
+		<OnBodyEnd>No</OnBodyEnd>
+		<RemoteMethod>No</RemoteMethod>
+		<ProcessRunOnce>No</ProcessRunOnce>
+		<ProcessInterval>15</ProcessInterval>
+		<PageTitle></PageTitle>
+		<RemoteAssetLink></RemoteAssetLink>
+		<Styles></Styles>
+		<Scripting Language="" EntryPoint="" Timeout="60000">
+			<Code><![CDATA[function m
+dim sql,cs,cs2,name,done
+sql = "SELECT table_name FROM information_schema.tables WHERE table_type = 'base table'"
+set cs = cp.csNew()
+set cs2 = cp.csNew()
+call cs.openSql( sql )
+done=false
+do while cs.ok() and not done
+    name = cs.getText( "table_name" )
+    if not cs2.open( "tables", "name='" & name & "'") then
+        m = m & "<br>" & name
+        m = m & ", not found"
+        'done=true
+        call cs2.close()
+        call cs2.insert( "tables" )
+        call cs2.setField( "name", name )
+        call cs2.setField( "active", "1" )
+    end if
+    call cs2.close()
+    call cs.gonext()
+loop
+call cs.close()
+'
+if cs.open( "tables", "(active<>0)", "lastIndexed" ) then
+    call cs.setField( "lastIndexed", now())
+    sql = "DBCC DBREINDEX ('" & cs.getText( "name" ) & "', ' ', 80)"
+    m = m & "<br>reindex sql=" & sql
+    call cp.db.executeSql( sql )
+end if
+call cs.close()
+'
+set cs=nothing
+end function]]></Code>
+		</Scripting>
+	</Addon>
+	<CDef Name="Tables" guid="{DD48A735-55C7-4B39-AF77-D3390337969B}" >
+		<Field Name="lastIndexed" active="True" AdminOnly="False" Authorable="True" Caption="Last Indexed" DeveloperOnly="False" EditSortPriority="2000" FieldType="Date" HTMLContent="False" IndexColumn="" IndexSortDirection="" IndexSortOrder="" IndexWidth="" RedirectID="" RedirectPath="" Required="False" TextBuffered="False" UniqueName="False" DefaultValue="" RSSTitle="False" RSSDescription="False" MemberSelectGroupID="" EditTab="" Scramble="False" LookupList="" NotEditable="False" Password="False" ReadOnly="True" ManyToManyRulePrimaryField="" ManyToManyRuleSecondaryField="" IsModified="True" IsBaseField="False" LookupContent="" RedirectContent="" ManyToManyContent="" ManyToManyRuleContent="" ></Field>
+	</CDef>
+</Collection>
